@@ -153,17 +153,25 @@ class User():
 
 	def remove_user_following():
 	
-		if 'user' in session.keys:
+		if 'user' in session.keys():
 			user = session['user']
 			parsed_json = request.get_json()
 			
-			user_following = parsed_json["added_following"]
-
-			unfollow = Follow_DBModel.query.filter_by(id = user["id"]).filter_by(following = user_following).first()
+			user_following = parsed_json['added_following']
+			isTrue = (Follow_DBModel.followers == user_following)
+			print(isTrue)
+			unfollow = Follow_DBModel.query.filter(Follow_DBModel.id is user["id"]).filter(Follow_DBModel.followers is user_following).first()
+			if (unfollow is None):
+				dict_local = {'code': 31, 'message': "auth error"}
+				return_string = json.dumps(dict_local, sort_keys=True, indent=4, separators=(',', ': '))
+				return return_string
+			
 			db.session.delete(unfollow)
+		
 			db.session.commit()
+		
 			return_dict = {'code': 200}
-			return_string = json.dumps(return_dict, sort_keys=True, indent=4, seperators=(',',': '))
+			return_string = json.dumps(return_dict, sort_keys=True, indent=4, separators=(',',': '))
 			return return_string
 		else:
 			dict_local = {'code': 31, 'message': "auth error"}
